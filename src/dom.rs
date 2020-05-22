@@ -20,7 +20,6 @@ pub struct ElementData {
     pub attributes: AttrMap,
 }
 
-
 pub fn text(data: String) -> Node {
     Node {
         children: Vec::new(),
@@ -34,6 +33,6 @@ pub fn elem(name: String, attrs: AttrMap, children: Vec<Node>) -> Node {
         node_type: NodeType::Element(ElementData {
             tag_name: name,
             attributes: attrs,
-        })
+        }),
     }
 }
