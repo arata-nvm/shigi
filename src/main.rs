@@ -12,6 +12,7 @@ fn main() {
             <h1>Title</h1>
             <div id="main" class="test">
                 <p>Hello <em>world</em>!</p>
+                 <img src="something.png" alt="Something" width="100" height="200" />
             </div>
         </body>
     </html>"#.to_string();
