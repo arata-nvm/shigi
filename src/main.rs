@@ -5,6 +5,7 @@ pub mod html;
 
 fn main() {
     let source = r#"
+    <!DOCTYPE html>
     <html>
         <!-- This is a comment -->
         <body>

@@ -52,6 +52,11 @@ impl Parser {
         }
     }
 
+    fn consume_doctype(&mut self) {
+        self.consume_while(|c| c != '>');
+        assert_eq!(self.consume_char(), '>');
+    }
+
     fn parse_tag_name(&mut self) -> String {
         self.consume_while(|c| match c {
             'a'...'z' | 'A'...'Z' | '0'...'9' => true,
@@ -122,6 +127,11 @@ impl Parser {
 
             if self.starts_with("<!--") {
                 self.consume_comment();
+                continue;
+            }
+
+            if self.starts_with("<!") {
+                self.consume_doctype();
                 continue;
             }
 
