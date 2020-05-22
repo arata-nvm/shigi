@@ -1,10 +1,9 @@
-use crate::html::Parser;
-
+pub mod css;
 pub mod dom;
 pub mod html;
 
 fn main() {
-    let source = r#"
+    let html_source = r#"
     <!DOCTYPE html>
     <html>
         <!-- This is a comment -->
@@ -16,6 +15,13 @@ fn main() {
             </div>
         </body>
     </html>"#.to_string();
-    let nodes = Parser::parse(source);
+    let nodes = html::Parser::parse(html_source);
     println!("{:#?}", nodes);
+
+    let css_source = r#"
+    h1, h2, h3 { margin: auto; color: #cc0000; }
+    div.note { margin-bottom: 20px; padding: 10px; }
+    #answer { display: none; }"#.to_string();
+    let stylesheet = css::Parser::parse(css_source);
+    println!("{:#?}", stylesheet);
 }
