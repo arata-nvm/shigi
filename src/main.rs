@@ -1,6 +1,9 @@
+use crate::style::style_tree;
+
 pub mod css;
 pub mod dom;
 pub mod html;
+pub mod style;
 
 fn main() {
     let html_source = r#"
@@ -26,4 +29,7 @@ fn main() {
         .to_string();
     let stylesheet = css::Parser::parse(css_source);
     println!("{:#?}", stylesheet);
+
+    let style_tree = style_tree(&nodes, &stylesheet);
+    println!("{:#?}", style_tree);
 }
