@@ -40,6 +40,18 @@ impl Parser {
         self.consume_while(|c| c.is_whitespace());
     }
 
+    fn consume_comment(&mut self) {
+        loop {
+            if self.starts_with("-->") {
+                assert_eq!(self.consume_char(), '-');
+                assert_eq!(self.consume_char(), '-');
+                assert_eq!(self.consume_char(), '>');
+                return;
+            }
+            self.consume_char();
+        }
+    }
+
     fn parse_tag_name(&mut self) -> String {
         self.consume_while(|c| match c {
             'a'...'z' | 'A'...'Z' | '0'...'9' => true,
@@ -107,9 +119,16 @@ impl Parser {
         let mut nodes = Vec::new();
         loop {
             self.consume_whitespace();
+
+            if self.starts_with("<!--") {
+                self.consume_comment();
+                continue;
+            }
+
             if self.eof() || self.starts_with("</") {
                 break;
             }
+
             nodes.push(self.parse_node());
         }
         return nodes;
