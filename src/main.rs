@@ -72,4 +72,8 @@ fn main() {
     );
 
     let result = image::ImageRgba8(img).save(&mut file, image::PNG);
+    match result {
+      Ok(_) => println!("Saved output as {}", filename),
+      Err(_) => println!("Error saving output as {}", filename),
+    }
 }

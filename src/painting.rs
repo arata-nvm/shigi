@@ -34,7 +34,7 @@ impl Canvas {
 
     fn paint_item(&mut self, item: &DisplayCommand) {
         match item {
-            &DisplayCommand::SolidColor(color, rect) => {
+            DisplayCommand::SolidColor(color, rect) => {
                 let x0 = clamp(rect.x, 0.0, self.width as f32) as usize;
                 let y0 = clamp(rect.y, 0.0, self.height as f32) as usize;
                 let x1 = clamp(rect.x + rect.width, 0.0, self.width as f32) as usize;
@@ -42,7 +42,7 @@ impl Canvas {
 
                 for y in y0..y1 {
                     for x in x0..x1 {
-                        self.pixels[x + y * self.width] = color;
+                        self.pixels[x + y * self.width] = *color;
                     }
                 }
             }

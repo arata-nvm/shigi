@@ -73,7 +73,7 @@ fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
 impl<'a> LayoutBox<'a> {
     fn new(box_type: BoxType) -> LayoutBox {
         LayoutBox {
-            box_type: box_type,
+            box_type,
             dimensions: Default::default(),
             children: Vec::new(),
         }
@@ -108,7 +108,7 @@ impl<'a> LayoutBox<'a> {
         let style = self.get_style_node();
 
         let auto = Keyword("auto".to_string());
-        let mut width = style.value("width").unwrap_or(auto.clone());
+        let mut width = style.value("width").unwrap_or_else(|| auto.clone());
 
         let zero = Length(0.0, Px);
 
@@ -215,7 +215,7 @@ impl<'a> LayoutBox<'a> {
         let d = &mut self.dimensions;
         for child in &mut self.children {
             child.layout(*d);
-            d.content.height = d.content.height + child.dimensions.margin_box().height;
+            d.content.height += child.dimensions.margin_box().height;
         }
     }
 
