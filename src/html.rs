@@ -167,3 +167,83 @@ impl Parser {
         return cur_char;
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::parse;
+    use crate::dom::{elem, text};
+    use std::collections::HashMap;
+
+    #[test]
+    fn test_parse() {
+        let html_source = r#"
+        <!DOCTYPE html>
+        <html>
+            <!-- This is a comment -->
+            <body>
+                <h1>Title</h1>
+                <div id="main" class="test">
+                    <p>Hello <em>world</em>!</p>
+                     <img src="something.png" alt="Something" width="100" height="200" />
+                </div>
+            </body>
+        </html>"#
+            .to_string();
+
+        let expected = elem(
+            "html".to_string(),
+            HashMap::new(),
+            vec![elem(
+                "body".to_string(),
+                HashMap::new(),
+                vec![
+                    elem(
+                        "h1".to_string(),
+                        HashMap::new(),
+                        vec![text("Title".to_string())],
+                    ),
+                    elem(
+                        "div".to_string(),
+                        {
+                            let mut map = HashMap::new();
+                            map.insert("id".to_string(), "main".to_string());
+                            map.insert("class".to_string(), "test".to_string());
+                            map
+                        },
+                        vec![
+                            elem(
+                                "p".to_string(),
+                                HashMap::new(),
+                                vec![
+                                    text("Hello ".to_string()),
+                                    elem(
+                                        "em".to_string(),
+                                        HashMap::new(),
+                                        vec![text("world".to_string())],
+                                    ),
+                                    text("!".to_string()),
+                                ],
+                            ),
+                            elem(
+                                "img".to_string(),
+                                {
+                                    let mut map = HashMap::new();
+                                    map.insert("src".to_string(), "something.png".to_string());
+                                    map.insert("alt".to_string(), "Something".to_string());
+                                    map.insert("width".to_string(), "100".to_string());
+                                    map.insert("height".to_string(), "200".to_string());
+                                    map
+                                },
+                                vec![],
+                            ),
+                        ],
+                    ),
+                ],
+            )],
+        );
+
+        let actual = parse(html_source);
+
+        assert_eq!(expected, actual);
+    }
+}
