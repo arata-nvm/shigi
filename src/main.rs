@@ -1,6 +1,6 @@
-use crate::style::style_tree;
 use crate::layout::layout_tree;
 use crate::painting::paint;
+use crate::style::style_tree;
 use std::fs::File;
 use std::path::Path;
 extern crate image;
@@ -42,14 +42,19 @@ fn main() {
         .to_string();
 
     let initial_containing_block = layout::Dimensions {
-        content: layout::Rect { x: 0.0, y: 0.0, width: 800.0, height: 600.0 },
+        content: layout::Rect {
+            x: 0.0,
+            y: 0.0,
+            width: 800.0,
+            height: 600.0,
+        },
         padding: Default::default(),
         border: Default::default(),
         margin: Default::default(),
     };
 
-    let nodes = html::Parser::parse(html_source);
-    let stylesheet = css::Parser::parse(css_source);
+    let nodes = html::parse(html_source);
+    let stylesheet = css::parse(css_source);
     let style_tree = style_tree(&nodes, &stylesheet);
     let layout_root = layout_tree(&style_tree, initial_containing_block);
     let canvas = paint(&layout_root, initial_containing_block.content);
@@ -60,8 +65,11 @@ fn main() {
     // Save an image:
     let (w, h) = (canvas.width as u32, canvas.height as u32);
     let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-    let img = image::ImageBuffer::from_fn(w, h, Box::new(|x: u32, y: u32| buffer[(y * w + x) as usize]));
+    let img = image::ImageBuffer::from_fn(
+        w,
+        h,
+        Box::new(|x: u32, y: u32| buffer[(y * w + x) as usize]),
+    );
 
     let result = image::ImageRgba8(img).save(&mut file, image::PNG);
-
 }

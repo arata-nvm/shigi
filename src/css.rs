@@ -67,45 +67,57 @@ impl Value {
     }
 }
 
-pub struct Parser {
+pub fn parse(source: String) -> Stylesheet {
+    let rules = Parser {
+        pos: 0,
+        input: source,
+    }
+    .parse_rules();
+
+    return Stylesheet { rules };
+}
+
+struct Parser {
     pos: usize,
     input: String,
 }
 
 impl Parser {
-    fn next_char(&self) -> char {
-        self.input[self.pos..].chars().next().unwrap()
-    }
-
-    fn eof(&self) -> bool {
-        self.pos >= self.input.len()
-    }
-
-    fn consume_char(&mut self) -> char {
-        let mut iter = self.input[self.pos..].char_indices();
-        let (_, cur_char) = iter.next().unwrap();
-        let (next_pos, _) = iter.next().unwrap_or((1, ' '));
-        self.pos += next_pos;
-        return cur_char;
-    }
-
-    fn consume_while<F>(&mut self, test: F) -> String
-    where
-        F: Fn(char) -> bool,
-    {
-        let mut result = String::new();
-        while !self.eof() && test(self.next_char()) {
-            result.push(self.consume_char());
+    fn parse_rules(&mut self) -> Vec<Rule> {
+        let mut rules = Vec::new();
+        loop {
+            self.consume_whitespace();
+            if self.eof() {
+                break;
+            }
+            rules.push(self.parse_rule());
         }
-        return result;
+        return rules;
     }
 
-    fn consume_whitespace(&mut self) {
-        self.consume_while(|c| c.is_whitespace());
+    fn parse_rule(&mut self) -> Rule {
+        Rule {
+            selectors: self.parse_selectors(),
+            declarations: self.parse_declarations(),
+        }
     }
 
-    fn parse_identifier(&mut self) -> String {
-        self.consume_while(valid_identifier_char)
+    fn parse_selectors(&mut self) -> Vec<Selector> {
+        let mut selectors = Vec::new();
+        loop {
+            selectors.push(Selector::Simple(self.parse_simple_selector()));
+            self.consume_whitespace();
+            match self.next_char() {
+                ',' => {
+                    self.consume_char();
+                    self.consume_whitespace();
+                }
+                '{' => break,
+                c => panic!("Unexpected character {} in selector list", c),
+            }
+        }
+        selectors.sort_by(|a, b| b.specificity().cmp(&a.specificity()));
+        return selectors;
     }
 
     fn parse_simple_selector(&mut self) -> SimpleSelector {
@@ -136,67 +148,22 @@ impl Parser {
         return selector;
     }
 
-    fn parse_selectors(&mut self) -> Vec<Selector> {
-        let mut selectors = Vec::new();
+    fn parse_identifier(&mut self) -> String {
+        self.consume_while(valid_identifier_char)
+    }
+
+    fn parse_declarations(&mut self) -> Vec<Declaration> {
+        assert_eq!(self.consume_char(), '{');
+        let mut declarations = Vec::new();
         loop {
-            selectors.push(Selector::Simple(self.parse_simple_selector()));
             self.consume_whitespace();
-            match self.next_char() {
-                ',' => {
-                    self.consume_char();
-                    self.consume_whitespace();
-                }
-                '{' => break,
-                c => panic!("Unexpected character {} in selector list", c),
+            if self.next_char() == '}' {
+                break;
             }
+            declarations.push(self.parse_declaration());
         }
-        selectors.sort_by(|a, b| b.specificity().cmp(&a.specificity()));
-        return selectors;
-    }
-
-    fn parse_hex(&mut self) -> u8 {
-        let hex_literal = &self.input[self.pos..self.pos + 2];
-        self.pos += 2;
-        return u8::from_str_radix(hex_literal, 16).unwrap();
-    }
-
-    fn parse_color_value(&mut self) -> Value {
-        assert_eq!(self.consume_char(), '#');
-        return Value::ColorValue(Color {
-            r: self.parse_hex(),
-            g: self.parse_hex(),
-            b: self.parse_hex(),
-            a: 255,
-        });
-    }
-
-    fn parse_unit(&mut self) -> Unit {
-        let unit = self.parse_identifier();
-        match unit.as_str() {
-            "px" => Unit::Px,
-            _ => panic!(""),
-        }
-    }
-
-    fn parse_float(&mut self) -> f32 {
-        let float_literal = self.consume_while(|c| match c {
-            '0'..='9' | '.' => true,
-            _ => false,
-        });
-
-        return float_literal.parse().unwrap();
-    }
-
-    fn parse_length_value(&mut self) -> Value {
-        return Value::Length(self.parse_float(), self.parse_unit());
-    }
-
-    fn parse_value(&mut self) -> Value {
-        match self.next_char() {
-            '0'..='9' => self.parse_length_value(),
-            '#' => self.parse_color_value(),
-            _ => Value::Keyword(self.parse_identifier()),
-        }
+        assert_eq!(self.consume_char(), '}');
+        return declarations;
     }
 
     fn parse_declaration(&mut self) -> Declaration {
@@ -214,47 +181,80 @@ impl Parser {
         return Declaration { name, value };
     }
 
-    fn parse_declarations(&mut self) -> Vec<Declaration> {
-        assert_eq!(self.consume_char(), '{');
-        let mut declarations = Vec::new();
-        loop {
-            self.consume_whitespace();
-            if self.next_char() == '}' {
-                break;
-            }
-            declarations.push(self.parse_declaration());
-        }
-        assert_eq!(self.consume_char(), '}');
-        return declarations;
-    }
-
-    fn parse_rule(&mut self) -> Rule {
-        Rule {
-            selectors: self.parse_selectors(),
-            declarations: self.parse_declarations(),
+    fn parse_value(&mut self) -> Value {
+        match self.next_char() {
+            '0'..='9' => self.parse_length_value(),
+            '#' => self.parse_color_value(),
+            _ => Value::Keyword(self.parse_identifier()),
         }
     }
 
-    fn parse_rules(&mut self) -> Vec<Rule> {
-        let mut rules = Vec::new();
-        loop {
-            self.consume_whitespace();
-            if self.eof() {
-                break;
-            }
-            rules.push(self.parse_rule());
-        }
-        return rules;
+    fn parse_length_value(&mut self) -> Value {
+        return Value::Length(self.parse_float(), self.parse_unit());
     }
 
-    pub fn parse(source: String) -> Stylesheet {
-        let rules = Parser {
-            pos: 0,
-            input: source,
-        }
-        .parse_rules();
+    fn parse_float(&mut self) -> f32 {
+        let float_literal = self.consume_while(|c| match c {
+            '0'..='9' | '.' => true,
+            _ => false,
+        });
 
-        return Stylesheet { rules };
+        return float_literal.parse().unwrap();
+    }
+
+    fn parse_unit(&mut self) -> Unit {
+        let unit = self.parse_identifier();
+        match unit.as_str() {
+            "px" => Unit::Px,
+            _ => panic!(""),
+        }
+    }
+
+    fn parse_color_value(&mut self) -> Value {
+        assert_eq!(self.consume_char(), '#');
+        return Value::ColorValue(Color {
+            r: self.parse_hex(),
+            g: self.parse_hex(),
+            b: self.parse_hex(),
+            a: 255,
+        });
+    }
+
+    fn parse_hex(&mut self) -> u8 {
+        let hex_literal = &self.input[self.pos..self.pos + 2];
+        self.pos += 2;
+        return u8::from_str_radix(hex_literal, 16).unwrap();
+    }
+
+    fn consume_while<F>(&mut self, test: F) -> String
+    where
+        F: Fn(char) -> bool,
+    {
+        let mut result = String::new();
+        while !self.eof() && test(self.next_char()) {
+            result.push(self.consume_char());
+        }
+        return result;
+    }
+
+    fn consume_whitespace(&mut self) {
+        self.consume_while(|c| c.is_whitespace());
+    }
+
+    fn next_char(&self) -> char {
+        self.input[self.pos..].chars().next().unwrap()
+    }
+
+    fn eof(&self) -> bool {
+        self.pos >= self.input.len()
+    }
+
+    fn consume_char(&mut self) -> char {
+        let mut iter = self.input[self.pos..].char_indices();
+        let (_, cur_char) = iter.next().unwrap();
+        let (next_pos, _) = iter.next().unwrap_or((1, ' '));
+        self.pos += next_pos;
+        return cur_char;
     }
 }
 

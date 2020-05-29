@@ -1,6 +1,6 @@
 use crate::css::Unit::Px;
 use crate::css::Value::{Keyword, Length};
-use crate::style::StyledNode;
+use crate::style::{Display, StyledNode};
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct Dimensions {
@@ -41,38 +41,6 @@ pub enum BoxType<'a> {
     AnonymousBlock,
 }
 
-#[derive(Debug)]
-pub enum Display {
-    Inline,
-    Block,
-    None,
-}
-
-impl Dimensions {
-    pub fn padding_box(self) -> Rect {
-        self.content.expanded_by(self.padding)
-    }
-
-    pub fn border_box(self) -> Rect {
-        self.padding_box().expanded_by(self.border)
-    }
-
-    pub fn margin_box(self) -> Rect {
-        self.border_box().expanded_by(self.margin)
-    }
-}
-
-impl Rect {
-    pub fn expanded_by(self, edge: EdgeSizes) -> Rect {
-        Rect {
-            x: self.x - edge.left,
-            y: self.y - edge.top,
-            width: self.width + edge.left + edge.right,
-            height: self.height + edge.top + edge.bottom,
-        }
-    }
-}
-
 pub fn layout_tree<'a>(node: &'a StyledNode<'a>, mut contaning_block: Dimensions) -> LayoutBox<'a> {
     contaning_block.content.height = 0.0;
 
@@ -111,34 +79,18 @@ impl<'a> LayoutBox<'a> {
         }
     }
 
-    fn get_style_node(&self) -> &'a StyledNode<'a> {
-        match self.box_type {
-            BoxType::BlockNode(node) | BoxType::InlineNode(node) => node,
-            BoxType::AnonymousBlock => panic!("Anonymous block box has no style node"),
-        }
-    }
-
-    fn get_inline_container(&mut self) -> &mut LayoutBox<'a> {
-        match self.box_type {
-            BoxType::InlineNode(_) | BoxType::AnonymousBlock => self,
-            BoxType::BlockNode(_) => {
-                match self.children.last() {
-                    Some(&LayoutBox {
-                        box_type: BoxType::AnonymousBlock,
-                        ..
-                    }) => {}
-                    _ => self.children.push(LayoutBox::new(BoxType::AnonymousBlock)),
-                }
-                self.children.last_mut().unwrap()
-            }
-        }
-    }
-
     fn layout(&mut self, containing_block: Dimensions) {
         match self.box_type {
             BoxType::BlockNode(_) => self.layout_block(containing_block),
             BoxType::InlineNode(_) => {}
             BoxType::AnonymousBlock => {}
+        }
+    }
+
+    fn get_style_node(&self) -> &'a StyledNode<'a> {
+        match self.box_type {
+            BoxType::BlockNode(node) | BoxType::InlineNode(node) => node,
+            BoxType::AnonymousBlock => panic!("Anonymous block box has no style node"),
         }
     }
 
@@ -271,5 +223,46 @@ impl<'a> LayoutBox<'a> {
         if let Some(Length(h, Px)) = self.get_style_node().value("height") {
             self.dimensions.content.height = h;
         }
+    }
+
+    fn get_inline_container(&mut self) -> &mut LayoutBox<'a> {
+        match self.box_type {
+            BoxType::InlineNode(_) | BoxType::AnonymousBlock => self,
+            BoxType::BlockNode(_) => {
+                match self.children.last() {
+                    Some(&LayoutBox {
+                        box_type: BoxType::AnonymousBlock,
+                        ..
+                    }) => {}
+                    _ => self.children.push(LayoutBox::new(BoxType::AnonymousBlock)),
+                }
+                self.children.last_mut().unwrap()
+            }
+        }
+    }
+}
+
+impl Rect {
+    pub fn expanded_by(self, edge: EdgeSizes) -> Rect {
+        Rect {
+            x: self.x - edge.left,
+            y: self.y - edge.top,
+            width: self.width + edge.left + edge.right,
+            height: self.height + edge.top + edge.bottom,
+        }
+    }
+}
+
+impl Dimensions {
+    pub fn padding_box(self) -> Rect {
+        self.content.expanded_by(self.padding)
+    }
+
+    pub fn border_box(self) -> Rect {
+        self.padding_box().expanded_by(self.border)
+    }
+
+    pub fn margin_box(self) -> Rect {
+        self.border_box().expanded_by(self.margin)
     }
 }
