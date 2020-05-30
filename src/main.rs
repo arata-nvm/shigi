@@ -1,16 +1,11 @@
-use crate::layout::layout_tree;
-use crate::painting::paint;
-use crate::style::style_tree;
+extern crate shigi;
+
+use shigi::layout::layout_tree;
+use shigi::painting::paint;
+use shigi::style::style_tree;
 use std::fs::File;
 use std::path::Path;
 extern crate image;
-
-pub mod css;
-pub mod dom;
-pub mod html;
-pub mod layout;
-pub mod painting;
-pub mod style;
 
 fn main() {
     let html_source = r#"
@@ -41,8 +36,8 @@ fn main() {
 .g { background: #800080; }"#
         .to_string();
 
-    let initial_containing_block = layout::Dimensions {
-        content: layout::Rect {
+    let initial_containing_block = shigi::layout::Dimensions {
+        content: shigi::layout::Rect {
             x: 0.0,
             y: 0.0,
             width: 800.0,
@@ -53,8 +48,8 @@ fn main() {
         margin: Default::default(),
     };
 
-    let nodes = html::parse(html_source);
-    let stylesheet = css::parse(css_source);
+    let nodes = shigi::html::parse(html_source);
+    let stylesheet = shigi::css::parse(css_source);
     let style_tree = style_tree(&nodes, &stylesheet);
     let layout_root = layout_tree(&style_tree, initial_containing_block);
     let canvas = paint(&layout_root, initial_containing_block.content);
