@@ -1,7 +1,7 @@
 extern crate shigi;
 
 use shigi::layout::layout_tree;
-use shigi::painting::paint;
+use shigi::display::paint;
 use shigi::style::style_tree;
 use std::fs::File;
 use std::path::Path;
