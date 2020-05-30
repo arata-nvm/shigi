@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 cairo-rs = { version = "0.8.1", features = ["pdf"] }
+clap = "2.33.1"
