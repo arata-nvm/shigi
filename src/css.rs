@@ -1,26 +1,26 @@
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Stylesheet {
     pub rules: Vec<Rule>,
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Rule {
     pub selectors: Vec<Selector>,
     pub declarations: Vec<Declaration>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Selector {
     Simple(SimpleSelector),
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SimpleSelector {
     pub tag_name: Option<String>,
     pub id: Option<String>,
     pub class: Vec<String>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Declaration {
     pub name: String,
     pub value: Value,
@@ -262,5 +262,91 @@ fn valid_identifier_char(c: char) -> bool {
     match c {
         'a'..='z' | 'A'..='Z' | '0'..='9' | '-' | '_' => true,
         _ => false,
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse;
+    use crate::css::{Color, Declaration, Rule, Selector, SimpleSelector, Stylesheet, Unit, Value};
+
+    #[test]
+    fn test_parse() {
+        let css_source = r#"
+        h1, h2, h3 { margin: auto; color: #cc0000; }
+        div.note { margin-bottom: 20px; padding: 10px; }
+        #answer { display: none; }"#
+            .to_string();
+
+        let expected = Stylesheet {
+            rules: vec![
+                Rule {
+                    selectors: vec![
+                        Selector::Simple(SimpleSelector {
+                            tag_name: Some("h1".to_string()),
+                            id: None,
+                            class: vec![],
+                        }),
+                        Selector::Simple(SimpleSelector {
+                            tag_name: Some("h2".to_string()),
+                            id: None,
+                            class: vec![],
+                        }),
+                        Selector::Simple(SimpleSelector {
+                            tag_name: Some("h3".to_string()),
+                            id: None,
+                            class: vec![],
+                        }),
+                    ],
+                    declarations: vec![
+                        Declaration {
+                            name: "margin".to_string(),
+                            value: Value::Keyword("auto".to_string()),
+                        },
+                        Declaration {
+                            name: "color".to_string(),
+                            value: Value::ColorValue(Color {
+                                r: 0xcc,
+                                g: 0x00,
+                                b: 0x00,
+                                a: 0xff,
+                            }),
+                        },
+                    ],
+                },
+                Rule {
+                    selectors: vec![Selector::Simple(SimpleSelector {
+                        tag_name: Some("div".to_string()),
+                        id: None,
+                        class: vec!["note".to_string()],
+                    })],
+                    declarations: vec![
+                        Declaration {
+                            name: "margin-bottom".to_string(),
+                            value: Value::Length(20.0, Unit::Px),
+                        },
+                        Declaration {
+                            name: "padding".to_string(),
+                            value: Value::Length(10.0, Unit::Px),
+                        },
+                    ],
+                },
+                Rule {
+                    selectors: vec![Selector::Simple(SimpleSelector {
+                        tag_name: None,
+                        id: Some("answer".to_string()),
+                        class: vec![],
+                    })],
+                    declarations: vec![Declaration {
+                        name: "display".to_string(),
+                        value: Value::Keyword("none".to_string()),
+                    }],
+                },
+            ],
+        };
+
+        let actual = parse(css_source);
+
+        assert_eq!(expected, actual);
     }
 }
