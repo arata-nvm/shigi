@@ -1,5 +1,8 @@
 extern crate shigi;
 
+mod clap_app;
+
+use std::fs;
 use shigi::display::build_display_list;
 use shigi::layout::layout_tree;
 use shigi::pdf::render;
@@ -7,34 +10,21 @@ use shigi::style::style_tree;
 use shigi::{css, html};
 
 fn main() {
-    let html_source = r#"
-<div class="a">
-  <div class="b">
-    <div class="c">
-      <div class="d">
-        <div class="e">
-          <div class="f">
-            <div class="g">
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>"#
-        .to_string();
+    let matches = clap_app::build_app()
+        .get_matches();
 
-    let css_source = r#"
-* { display: block; padding: 12px; }
-.a { background: #ff0000; }
-.b { background: #ffa500; }
-.c { background: #ffff00; }
-.d { background: #008000; }
-.e { background: #0000ff; }
-.f { background: #4b0082; }
-.g { background: #800080; }"#
-        .to_string();
+    let html_file = matches.value_of("html-file").unwrap();
+    let css_file = matches.value_of("css-file").unwrap();
+    let output = matches.value_of("output").unwrap();
 
+    let html_source = fs::read_to_string(html_file).unwrap();
+    let css_source = fs::read_to_string(css_file).unwrap();
+
+    render_to_pdf(html_source, css_source, output.to_string());
+}
+
+fn render_to_pdf(html_source: String, css_source: String, output: String) {
+    // TODO: Don't use magic numbers
     let initial_containing_block = shigi::layout::Dimensions {
         content: shigi::layout::Rect {
             x: 0.0,
@@ -55,6 +45,7 @@ fn main() {
     render(
         &display_list,
         initial_containing_block.content,
-        "output.pdf".to_string(),
+        output,
     );
 }
+

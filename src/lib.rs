@@ -7,3 +7,4 @@ pub mod pdf;
 pub mod style;
 
 extern crate cairo;
+extern crate clap;
