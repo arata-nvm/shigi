@@ -26,5 +26,24 @@ impl PdfRenderer {
         }
     }
 
-    fn render_item(&mut self, item: &DisplayCommand) {}
+    fn render_item(&mut self, item: &DisplayCommand) {
+        match item {
+            DisplayCommand::SolidColor(ref color, ref rect) => {
+                println!("{:?}", color);
+                self.ctx.set_source_rgba(
+                    color.r as f64 / 255.0,
+                    color.g as f64 / 255.0,
+                    color.b as f64 / 255.0,
+                    color.a as f64 / 255.0,
+                );
+                self.ctx.rectangle(
+                    rect.x as f64,
+                    rect.y as f64,
+                    rect.width as f64,
+                    rect.height as f64,
+                );
+                self.ctx.fill();
+            }
+        }
+    }
 }
