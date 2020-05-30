@@ -1,11 +1,10 @@
 extern crate shigi;
 
+use shigi::display::build_display_list;
 use shigi::layout::layout_tree;
-use shigi::display::paint;
+use shigi::pdf::render;
 use shigi::style::style_tree;
-use std::fs::File;
-use std::path::Path;
-extern crate image;
+use shigi::{css, html};
 
 fn main() {
     let html_source = r#"
@@ -48,27 +47,14 @@ fn main() {
         margin: Default::default(),
     };
 
-    let nodes = shigi::html::parse(html_source);
-    let stylesheet = shigi::css::parse(css_source);
+    let nodes = html::parse(html_source);
+    let stylesheet = css::parse(css_source);
     let style_tree = style_tree(&nodes, &stylesheet);
     let layout_root = layout_tree(&style_tree, initial_containing_block);
-    let canvas = paint(&layout_root, initial_containing_block.content);
-
-    let filename = "output.png";
-    let mut file = File::create(&Path::new(filename)).unwrap();
-
-    // Save an image:
-    let (w, h) = (canvas.width as u32, canvas.height as u32);
-    let buffer: Vec<image::Rgba<u8>> = unsafe { std::mem::transmute(canvas.pixels) };
-    let img = image::ImageBuffer::from_fn(
-        w,
-        h,
-        Box::new(|x: u32, y: u32| buffer[(y * w + x) as usize]),
+    let display_list = build_display_list(&layout_root);
+    render(
+        &display_list,
+        initial_containing_block.content,
+        "output.pdf".to_string(),
     );
-
-    let result = image::ImageRgba8(img).save(&mut file, image::PNG);
-    match result {
-        Ok(_) => println!("Saved output as {}", filename),
-        Err(_) => println!("Error saving output as {}", filename),
-    }
 }

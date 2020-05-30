@@ -50,14 +50,14 @@ impl Canvas {
     }
 }
 
-type DisplayList = Vec<DisplayCommand>;
+pub type DisplayList = Vec<DisplayCommand>;
 
 #[derive(Debug)]
-enum DisplayCommand {
+pub enum DisplayCommand {
     SolidColor(Color, Rect),
 }
 
-fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
+pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
     let mut list = Vec::new();
     render_layout_box(&mut list, layout_root);
     return list;
