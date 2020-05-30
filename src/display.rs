@@ -1,54 +1,5 @@
 use crate::css::{Color, Value};
 use crate::layout::{BoxType, LayoutBox, Rect};
-use std::iter::repeat;
-
-pub struct Canvas {
-    pub pixels: Vec<Color>,
-    pub width: usize,
-    pub height: usize,
-}
-
-pub fn paint(layout_root: &LayoutBox, bounds: Rect) -> Canvas {
-    let display_list = build_display_list(layout_root);
-    let mut canvas = Canvas::new(bounds.width as usize, bounds.height as usize);
-    for item in display_list {
-        canvas.paint_item(&item);
-    }
-    return canvas;
-}
-
-impl Canvas {
-    pub fn new(width: usize, height: usize) -> Canvas {
-        let white = Color {
-            r: 255,
-            g: 255,
-            b: 255,
-            a: 255,
-        };
-        return Canvas {
-            pixels: repeat(white).take(width * height).collect(),
-            width: width,
-            height: height,
-        };
-    }
-
-    fn paint_item(&mut self, item: &DisplayCommand) {
-        match item {
-            DisplayCommand::SolidColor(color, rect) => {
-                let x0 = clamp(rect.x, 0.0, self.width as f32) as usize;
-                let y0 = clamp(rect.y, 0.0, self.height as f32) as usize;
-                let x1 = clamp(rect.x + rect.width, 0.0, self.width as f32) as usize;
-                let y1 = clamp(rect.y + rect.height, 0.0, self.height as f32) as usize;
-
-                for y in y0..y1 {
-                    for x in x0..x1 {
-                        self.pixels[x + y * self.width] = *color;
-                    }
-                }
-            }
-        }
-    }
-}
 
 pub type DisplayList = Vec<DisplayCommand>;
 
@@ -139,8 +90,4 @@ fn render_borders(list: &mut DisplayList, layout_box: &LayoutBox) {
             height: d.border.bottom,
         },
     ))
-}
-
-fn clamp(value: f32, min: f32, max: f32) -> f32 {
-    return value.max(min).min(max);
 }
