@@ -1,5 +1,6 @@
 use crate::css::Unit::Px;
 use crate::css::Value::{Keyword, Length};
+use crate::dom::NodeType;
 use crate::style::{Display, StyledNode};
 
 #[derive(Debug, Default, Copy, Clone)]
@@ -38,6 +39,7 @@ pub struct LayoutBox<'a> {
 pub enum BoxType<'a> {
     BlockNode(&'a StyledNode<'a>),
     InlineNode(&'a StyledNode<'a>),
+    TextNode(&'a StyledNode<'a>),
     AnonymousBlock,
 }
 
@@ -52,7 +54,10 @@ pub fn layout_tree<'a>(node: &'a StyledNode<'a>, mut contaning_block: Dimensions
 fn build_layout_tree<'a>(style_node: &'a StyledNode<'a>) -> LayoutBox<'a> {
     let mut root = LayoutBox::new(match style_node.display() {
         Display::Block => BoxType::BlockNode(style_node),
-        Display::Inline => BoxType::InlineNode(style_node),
+        Display::Inline => match style_node.node.node_type {
+            NodeType::Element(_) =>  BoxType::InlineNode(style_node),
+            NodeType::Text(_) => BoxType::TextNode(style_node),
+        },
         Display::None => panic!("Root node has display: none."),
     });
 
@@ -83,13 +88,14 @@ impl<'a> LayoutBox<'a> {
         match self.box_type {
             BoxType::BlockNode(_) => self.layout_block(containing_block),
             BoxType::InlineNode(_) => {}
+            BoxType::TextNode(_) => {}
             BoxType::AnonymousBlock => {}
         }
     }
 
     fn get_style_node(&self) -> &'a StyledNode<'a> {
         match self.box_type {
-            BoxType::BlockNode(node) | BoxType::InlineNode(node) => node,
+            BoxType::BlockNode(node) | BoxType::InlineNode(node) | BoxType::TextNode(node) => node,
             BoxType::AnonymousBlock => panic!("Anonymous block box has no style node"),
         }
     }
@@ -238,6 +244,7 @@ impl<'a> LayoutBox<'a> {
                 }
                 self.children.last_mut().unwrap()
             }
+            BoxType::TextNode(_) => panic!()
         }
     }
 }

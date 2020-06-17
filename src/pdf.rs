@@ -43,6 +43,12 @@ impl PdfRenderer {
                 );
                 self.ctx.fill();
             }
+            DisplayCommand::Text(ref text, ref rect) => {
+                // TODO: Don't use magic number
+                self.ctx.set_font_size(16.0);
+                self.ctx.move_to(rect.x as f64, rect.y as f64);
+                self.ctx.show_text(text);
+            }
         }
     }
 }

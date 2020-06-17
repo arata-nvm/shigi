@@ -1,4 +1,5 @@
 use crate::css::{Color, Value};
+use crate::dom::{NodeType};
 use crate::layout::{BoxType, LayoutBox, Rect};
 
 pub type DisplayList = Vec<DisplayCommand>;
@@ -6,6 +7,7 @@ pub type DisplayList = Vec<DisplayCommand>;
 #[derive(Debug)]
 pub enum DisplayCommand {
     SolidColor(Color, Rect),
+    Text(String, Rect),
 }
 
 pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
@@ -17,9 +19,21 @@ pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
 fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
     render_background(list, layout_box);
     render_borders(list, layout_box);
+    render_text(list, layout_box);
 
     for child in &layout_box.children {
         render_layout_box(list, child);
+    }
+}
+
+fn render_text(list: &mut DisplayList, layout_box: &LayoutBox) {
+    if let BoxType::TextNode(style) = layout_box.box_type {
+        if let NodeType::Text(text) = &style.node.node_type {
+            list.push(DisplayCommand::Text(
+                text.to_string(),
+                layout_box.dimensions.content,
+            ));
+        }
     }
 }
 
@@ -38,7 +52,7 @@ fn get_color(layout_box: &LayoutBox, name: &str) -> Option<Color> {
             Some(Value::ColorValue(color)) => Some(color),
             _ => None,
         },
-        BoxType::AnonymousBlock => None,
+        _ => None,
     }
 }
 

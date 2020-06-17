@@ -1,3 +1,5 @@
 h1, h2, h3 { margin: auto; color: #cc0000; }
 div.note { margin-bottom: 20px; padding: 10px; }
 #answer { display: none; }
+div, p { display: block; background: #cc0000; width: 100px; }
+

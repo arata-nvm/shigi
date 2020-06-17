@@ -42,6 +42,7 @@ fn render_to_pdf(html_source: String, css_source: String, output: String) {
     let style_tree = style_tree(&nodes, &stylesheet);
     let layout_root = layout_tree(&style_tree, initial_containing_block);
     let display_list = build_display_list(&layout_root);
+    println!("{:#?}", display_list);
     render(
         &display_list,
         initial_containing_block.content,
