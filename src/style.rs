@@ -64,7 +64,7 @@ impl<'a> StyledNode<'a> {
 pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<'a> {
     StyledNode {
         node: root,
-        specified_values: match root.node_type {
+        specified_values: match root.typ {
             NodeType::Element(ref elem) => specified_values(elem, stylesheet),
             NodeType::Text(_) => HashMap::new(),
         },
