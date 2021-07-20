@@ -1,0 +1,12 @@
+* {
+    display: block;
+    padding: 12px;
+    border-color: #000000;
+    border-width: 1px;
+}
+.relative {
+    position: relative;
+    left: 10px;
+    top: -50px;
+    width: 100px;
+}

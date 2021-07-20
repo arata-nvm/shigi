@@ -18,9 +18,19 @@ pub enum Display {
     None,
 }
 
+#[derive(Debug)]
+pub enum Position {
+    Static,
+    Relative,
+}
+
 impl<'a> StyledNode<'a> {
     pub fn value(&self, name: &str) -> Option<Value> {
         self.specified_values.get(name).cloned()
+    }
+
+    pub fn value_or(&self, name: &str, default: &Value) -> Value {
+        self.specified_values.get(name).unwrap_or(default).clone()
     }
 
     pub fn lookup(&self, name: &str, fallback_name: &str, default: &Value) -> Value {
@@ -36,6 +46,17 @@ impl<'a> StyledNode<'a> {
                 _ => Display::Inline,
             },
             _ => Display::Inline,
+        }
+    }
+
+    pub fn position(&self) -> Position {
+        match self.value("position") {
+            Some(Value::Keyword(s)) => match &*s {
+                "static" => Position::Static,
+                "relative" => Position::Relative,
+                _ => Position::Static,
+            },
+            _ => Position::Static,
         }
     }
 }

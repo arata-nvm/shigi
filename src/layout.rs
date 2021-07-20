@@ -1,6 +1,6 @@
 use crate::css::Unit::Px;
 use crate::css::Value::{Keyword, Length};
-use crate::style::{Display, StyledNode};
+use crate::style::{Display, Position, StyledNode};
 
 #[derive(Debug, Default, Copy, Clone)]
 pub struct Dimensions {
@@ -209,6 +209,30 @@ impl<'a> LayoutBox<'a> {
             + d.margin.top
             + d.border.top
             + d.padding.top;
+
+        if let Position::Relative = style.position() {
+            let auto = Keyword("auto".to_string());
+
+            let mut left = style.value_or("left", &auto);
+            let right = style.value_or("right", &auto);
+            let mut top = style.value_or("top", &auto);
+            let bottom = style.value_or("bottom", &auto);
+
+            match (left == auto, right == auto) {
+                (true, true) => left = Length(0.0, Px),
+                (true, false) => left = Length(-right.to_px(), Px),
+                _ => {}
+            }
+
+            match (top == auto, bottom == auto) {
+                (true, true) => top = Length(0.0, Px),
+                (true, false) => top = Length(-bottom.to_px(), Px),
+                _ => {}
+            }
+
+            d.content.x += left.to_px();
+            d.content.y += top.to_px();
+        }
     }
 
     fn layout_block_children(&mut self) {
