@@ -48,6 +48,12 @@ pub struct Color {
 
 pub type Specificity = (usize, usize, usize);
 
+impl Stylesheet {
+    pub fn merge(&mut self, other: Stylesheet) {
+        self.rules.extend(other.rules);
+    }
+}
+
 impl Selector {
     pub fn specificity(&self) -> Specificity {
         let Selector::Simple(ref simple) = *self;
