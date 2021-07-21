@@ -87,6 +87,12 @@ impl Parser {
         let mut rules = Vec::new();
         loop {
             self.consume_whitespace();
+
+            if self.starts_with("/*") {
+                self.consume_comment();
+                continue;
+            }
+
             if self.eof() {
                 break;
             }
@@ -241,8 +247,23 @@ impl Parser {
         self.consume_while(|c| c.is_whitespace());
     }
 
+    fn consume_comment(&mut self) {
+        loop {
+            if self.starts_with("*/") {
+                assert_eq!(self.consume_char(), '*');
+                assert_eq!(self.consume_char(), '/');
+                return;
+            }
+            self.consume_char();
+        }
+    }
+
     fn next_char(&self) -> char {
         self.input[self.pos..].chars().next().unwrap()
+    }
+
+    fn starts_with(&self, s: &str) -> bool {
+        self.input[self.pos..].starts_with(s)
     }
 
     fn eof(&self) -> bool {
