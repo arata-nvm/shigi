@@ -3,7 +3,7 @@ html, body, div {
     display: block;
 }
 
-head {
+head, style {
     display: none;
 }
 
