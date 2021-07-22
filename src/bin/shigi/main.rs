@@ -3,7 +3,7 @@ extern crate shigi;
 mod clap_app;
 
 use shigi::layout::{Dimensions, Rect};
-use shigi::{css, display, html, layout, pdf, style};
+use shigi::{css, display, html, layout, style};
 use std::fs;
 
 fn main() {
@@ -34,5 +34,5 @@ fn render_to_pdf<S: Into<String>>(html_path: S, output_path: S, bound: Dimension
     let style_tree = style::style_tree(&document.root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_tree, bound);
     let display_list = display::build_display_list(&layout_root);
-    pdf::render(&display_list, bound.content, output_path);
+    display::pdf::render(&display_list, bound.content, output_path);
 }

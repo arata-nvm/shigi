@@ -1,4 +1,6 @@
-use crate::dom;
+pub mod dom;
+pub use dom::*;
+
 use std::collections::HashMap;
 
 pub fn parse(source: String) -> dom::Document {
@@ -173,7 +175,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use super::parse;
-    use crate::dom::{elem, text};
+    use crate::html::{elem, text};
     use std::collections::HashMap;
 
     #[test]

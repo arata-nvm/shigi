@@ -1,3 +1,5 @@
+pub mod pdf;
+
 use crate::css::{Color, Value};
 use crate::layout::{BoxType, LayoutBox, Rect};
 
