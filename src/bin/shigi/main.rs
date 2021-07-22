@@ -22,7 +22,7 @@ fn render_to_pdf<S: Into<String>>(html_path: S, output_path: S, bound: Dimension
     let html_source = fs::read_to_string(html_path).unwrap();
     let document = html::parse(html_source);
 
-    let mut stylesheet = css::Stylesheet::default();
+    let mut stylesheet = css::Stylesheet::default_style();
     for css_path in document.collect_css_pathes() {
         let css_source = fs::read_to_string(css_path).unwrap();
         stylesheet.merge(css::parse(css_source));

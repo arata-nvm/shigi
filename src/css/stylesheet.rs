@@ -1,3 +1,5 @@
+use crate::css::{self, default::DEFAULT_STYLE};
+
 #[derive(Debug, PartialEq, Default)]
 pub struct Stylesheet {
     pub rules: Vec<Rule>,
@@ -49,6 +51,10 @@ pub struct Color {
 pub type Specificity = (usize, usize, usize);
 
 impl Stylesheet {
+    pub fn default_style() -> Self {
+        css::parse(DEFAULT_STYLE.into())
+    }
+
     pub fn merge(&mut self, other: Stylesheet) {
         self.rules.extend(other.rules);
     }
