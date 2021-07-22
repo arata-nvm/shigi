@@ -9,5 +9,5 @@ A toy browser engine written in Rust.
 ## How To Use
 
 ```bash
-$ cargo run <html-file> <css-file> [output]
+$ cargo run <html-file> [output]
 ```
