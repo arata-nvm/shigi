@@ -27,6 +27,9 @@ fn render_to_pdf<S: Into<String>>(html_path: S, output_path: S, bound: Dimension
         let css_source = fs::read_to_string(css_path).unwrap();
         stylesheet.merge(css::parse(css_source));
     }
+    for css_source in document.collect_inline_styles() {
+        stylesheet.merge(css::parse(css_source));
+    }
 
     let style_tree = style::style_tree(&document.root_node, &stylesheet);
     let layout_root = layout::layout_tree(&style_tree, bound);

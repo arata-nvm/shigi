@@ -47,9 +47,9 @@ impl Document {
         Self { root_node }
     }
 
-    fn collect_tags<'a>(&self, node: &'a Node, tag_name: &str, nodes: &mut Vec<&'a ElementData>) {
-        if let NodeType::Element(ref node) = node.typ {
-            if node.tag_name == tag_name {
+    fn collect_tags<'a>(&self, node: &'a Node, tag_name: &str, nodes: &mut Vec<&'a Node>) {
+        if let NodeType::Element(ref dat) = node.typ {
+            if dat.tag_name == tag_name {
                 nodes.push(node);
             }
         }
@@ -65,6 +65,10 @@ impl Document {
 
         links
             .iter()
+            .filter_map(|node| match node.typ {
+                NodeType::Element(ref dat) => Some(dat),
+                _ => None,
+            })
             .filter(|node| {
                 node.attrs
                     .get("rel")
@@ -72,6 +76,27 @@ impl Document {
             })
             .filter_map(|node| node.attrs.get("href").cloned())
             .collect()
+    }
+
+    pub fn collect_inline_styles(&self) -> Vec<String> {
+        let mut styles = Vec::new();
+        self.collect_tags(&self.root_node, "style", &mut styles);
+
+        styles.iter().map(|node| node.inner_text()).collect()
+    }
+}
+
+impl Node {
+    pub fn inner_text(&self) -> String {
+        if let NodeType::Text(ref text) = self.typ {
+            return text.clone();
+        }
+
+        self.children
+            .iter()
+            .map(|child| child.inner_text())
+            .collect::<Vec<String>>()
+            .join("")
     }
 }
 
