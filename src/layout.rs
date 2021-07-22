@@ -308,6 +308,15 @@ impl<'a> LayoutBox<'a> {
             + d.border.left
             + d.margin.left;
         d.content.y = containing_block.content.y + containing_block.content.height;
+
+        let mut max_height = 0.0f32;
+        for child in &mut self.children {
+            child.layout(self.dimensions);
+
+            self.dimensions.content.width += child.dimensions.margin_box().width;
+            max_height = max_height.max(child.dimensions.content.height);
+        }
+        self.dimensions.content.height += max_height;
     }
 
     fn layout_anonymous_block(&mut self, mut containing_block: Dimensions) {
