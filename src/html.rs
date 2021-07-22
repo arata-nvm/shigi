@@ -1,18 +1,20 @@
 use crate::dom;
 use std::collections::HashMap;
 
-pub fn parse(source: String) -> dom::Node {
+pub fn parse(source: String) -> dom::Document {
     let mut nodes = Parser {
         pos: 0,
         input: source,
     }
     .parse_nodes();
 
-    if nodes.len() == 1 {
+    let root_node = if nodes.len() == 1 {
         nodes.swap_remove(0)
     } else {
         dom::elem("html".to_string(), HashMap::new(), nodes)
-    }
+    };
+
+    dom::Document::new(root_node)
 }
 
 struct Parser {
@@ -242,7 +244,7 @@ mod tests {
             )],
         );
 
-        let actual = parse(html_source);
+        let actual = parse(html_source).root_node;
 
         assert_eq!(expected, actual);
     }

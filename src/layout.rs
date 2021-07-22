@@ -41,6 +41,26 @@ pub enum BoxType<'a> {
     AnonymousBlock,
 }
 
+impl Dimensions {
+    pub fn new(bound: Rect) -> Self {
+        Self {
+            content: bound,
+            ..Default::default()
+        }
+    }
+}
+
+impl Rect {
+    pub fn new(x: f32, y: f32, width: f32, height: f32) -> Self {
+        Self {
+            x,
+            y,
+            width,
+            height,
+        }
+    }
+}
+
 pub fn layout_tree<'a>(node: &'a StyledNode<'a>, mut contaning_block: Dimensions) -> LayoutBox<'a> {
     contaning_block.content.height = 0.0;
 
