@@ -25,6 +25,25 @@ fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
     }
 }
 
+fn debug_draw(list: &mut DisplayList, layout_box: &LayoutBox) {
+    list.push(DisplayCommand::SolidColor(
+        Color::new(255, 0, 0, 30),
+        layout_box.dimensions.margin_box(),
+    ));
+    list.push(DisplayCommand::SolidColor(
+        Color::new(0, 0, 255, 30),
+        layout_box.dimensions.padding_box(),
+    ));
+    list.push(DisplayCommand::SolidColor(
+        Color::new(0, 255, 0, 255),
+        Rect {
+            width: 1.0,
+            height: 1.0,
+            ..layout_box.dimensions.content
+        },
+    ));
+}
+
 fn render_background(list: &mut DisplayList, layout_box: &LayoutBox) {
     get_color(layout_box, "background").map(|color| {
         list.push(DisplayCommand::SolidColor(
