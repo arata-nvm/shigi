@@ -30,6 +30,18 @@ pub struct EdgeSizes {
     pub bottom: f32,
 }
 
+#[derive(Debug, Default, Copy, Clone)]
+pub struct Position {
+    pub x: f32,
+    pub y: f32,
+}
+
+#[derive(Debug)]
+pub struct Region {
+    pub width: f32,
+    pub height: f32,
+}
+
 #[derive(Debug)]
 pub struct LayoutBox<'a> {
     pub dimensions: Dimensions,
@@ -61,6 +73,18 @@ impl Rect {
             width,
             height,
         }
+    }
+}
+
+impl Position {
+    pub fn new(x: f32, y: f32) -> Self {
+        Self { x, y }
+    }
+}
+
+impl Region {
+    pub fn new(width: f32, height: f32) -> Self {
+        Self { width, height }
     }
 }
 

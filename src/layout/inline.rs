@@ -1,12 +1,30 @@
-use super::{Dimensions, LayoutBox, Length, Px};
+use crate::{html::NodeType, text::calc_text_region};
+
+use super::{BoxType, Dimensions, LayoutBox, Length, Px};
 
 impl<'a> LayoutBox<'a> {
     pub(crate) fn layout_inline(&mut self, containing_block: Dimensions) {
+        self.calculate_width();
+
         self.calculate_dimentions();
 
         self.calculate_position(containing_block);
 
         self.layout_children();
+    }
+
+    fn calculate_width(&mut self) {
+        match self.box_type {
+            BoxType::InlineNode(ref style) => match style.node.typ {
+                NodeType::Text(ref text) => {
+                    let region = calc_text_region(text.clone());
+                    self.dimensions.content.width = region.width;
+                    self.dimensions.content.height = region.height;
+                }
+                _ => {}
+            },
+            _ => {}
+        }
     }
 
     fn calculate_dimentions(&mut self) {
@@ -50,7 +68,6 @@ impl<'a> LayoutBox<'a> {
 
     fn layout_children(&mut self) {
         let mut max_height = 0.0f32;
-        self.dimensions.content.width = 0.0;
 
         for child in &mut self.children {
             child.layout(self.dimensions);
@@ -59,7 +76,7 @@ impl<'a> LayoutBox<'a> {
             max_height = max_height.max(child.dimensions.content.height);
         }
 
-        self.dimensions.content.height += max_height;
+        self.dimensions.content.height = max_height.max(self.dimensions.content.height);
     }
 
     pub(crate) fn layout_anonymous_block(&mut self, mut containing_block: Dimensions) {

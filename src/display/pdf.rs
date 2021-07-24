@@ -43,6 +43,12 @@ impl PdfRenderer {
                 );
                 self.ctx.fill();
             }
+            DisplayCommand::Text(ref text, ref pos) => {
+                let extents = self.ctx.text_extents(text);
+                let y = pos.y as f64 - extents.y_bearing;
+                self.ctx.move_to(pos.x as f64, y);
+                self.ctx.show_text(text);
+            }
         }
     }
 }

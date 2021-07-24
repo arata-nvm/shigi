@@ -1,5 +1,5 @@
 pub const DEFAULT_STYLE: &str = "
-html, body, div {
+html, body, div, p {
     display: block;
 }
 
