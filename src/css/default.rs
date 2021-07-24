@@ -10,4 +10,8 @@ head, style {
 body {
     margin: 8px;
 }
+
+p {
+    margin: 1.12em 0;
+}
 ";

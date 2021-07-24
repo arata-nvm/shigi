@@ -82,11 +82,40 @@ fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap 
 
     rules.sort_by(|&(a, _), &(b, _)| a.cmp(&b));
     for (_, rule) in rules {
-        for declaration in &rule.declarations {
-            values.insert(declaration.name.clone(), declaration.value.clone());
+        for decl in &rule.declarations {
+            match decl.name.as_str() {
+                "margin" => match decl.values.len() {
+                    1 => {
+                        values.insert("margin".into(), decl.values[0].clone());
+                    }
+                    2 => {
+                        values.insert("margin-top".into(), decl.values[0].clone());
+                        values.insert("margin-bottom".into(), decl.values[0].clone());
+                        values.insert("margin-left".into(), decl.values[1].clone());
+                        values.insert("margin-right".into(), decl.values[1].clone());
+                    }
+                    3 => {
+                        values.insert("margin-top".into(), decl.values[0].clone());
+                        values.insert("margin-bottom".into(), decl.values[1].clone());
+                        values.insert("margin-left".into(), decl.values[1].clone());
+                        values.insert("margin-right".into(), decl.values[2].clone());
+                    }
+                    4 => {
+                        values.insert("margin-top".into(), decl.values[0].clone());
+                        values.insert("margin-bottom".into(), decl.values[1].clone());
+                        values.insert("margin-left".into(), decl.values[2].clone());
+                        values.insert("margin-right".into(), decl.values[3].clone());
+                    }
+                    _ => {}
+                },
+                _ => {
+                    values.insert(decl.name.clone(), decl.values[0].clone());
+                }
+            }
         }
     }
-    return values;
+
+    values
 }
 
 type MatchedRule<'a> = (Specificity, &'a Rule);

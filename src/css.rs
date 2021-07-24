@@ -115,12 +115,28 @@ impl Parser {
         assert_eq!(self.consume_char(), ':');
         self.consume_whitespace();
 
-        let value = self.parse_value();
+        let values = self.parse_values();
 
         self.consume_whitespace();
         assert_eq!(self.consume_char(), ';');
 
-        return Declaration { name, value };
+        return Declaration { name, values };
+    }
+
+    fn parse_values(&mut self) -> Vec<Value> {
+        let mut values = Vec::new();
+
+        loop {
+            self.consume_whitespace();
+
+            if self.next_char() == ';' {
+                break;
+            }
+
+            values.push(self.parse_value());
+        }
+
+        values
     }
 
     fn parse_value(&mut self) -> Value {
@@ -263,16 +279,16 @@ mod tests {
                     declarations: vec![
                         Declaration {
                             name: "margin".to_string(),
-                            value: Value::Keyword("auto".to_string()),
+                            values: vec![Value::Keyword("auto".to_string())],
                         },
                         Declaration {
                             name: "color".to_string(),
-                            value: Value::ColorValue(Color {
+                            values: vec![Value::ColorValue(Color {
                                 r: 0xcc,
                                 g: 0x00,
                                 b: 0x00,
                                 a: 0xff,
-                            }),
+                            })],
                         },
                     ],
                 },
@@ -285,11 +301,11 @@ mod tests {
                     declarations: vec![
                         Declaration {
                             name: "margin-bottom".to_string(),
-                            value: Value::Length(20.0, Unit::Px),
+                            values: vec![Value::Length(20.0, Unit::Px)],
                         },
                         Declaration {
                             name: "padding".to_string(),
-                            value: Value::Length(10.0, Unit::Px),
+                            values: vec![Value::Length(10.0, Unit::Px)],
                         },
                     ],
                 },
@@ -301,7 +317,7 @@ mod tests {
                     })],
                     declarations: vec![Declaration {
                         name: "display".to_string(),
-                        value: Value::Keyword("none".to_string()),
+                        values: vec![Value::Keyword("none".to_string())],
                     }],
                 },
             ],

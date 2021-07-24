@@ -25,7 +25,7 @@ pub struct SimpleSelector {
 #[derive(Debug, PartialEq)]
 pub struct Declaration {
     pub name: String,
-    pub value: Value,
+    pub values: Vec<Value>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
