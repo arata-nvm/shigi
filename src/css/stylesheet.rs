@@ -32,6 +32,7 @@ pub struct Declaration {
 pub enum Value {
     Keyword(String),
     Length(f32, Unit),
+    Number(f32),
     ColorValue(Color),
 }
 
@@ -76,6 +77,7 @@ impl Value {
         match *self {
             Value::Length(f, Unit::Px) => f,
             Value::Length(f, Unit::Em) => f * 16.0,
+            Value::Number(f) => f, // TODO
             _ => 0.0,
         }
     }
