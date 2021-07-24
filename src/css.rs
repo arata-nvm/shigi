@@ -132,7 +132,11 @@ impl Parser {
     }
 
     fn parse_length_value(&mut self) -> Value {
-        return Value::Length(self.parse_float(), self.parse_unit());
+        let f = self.parse_float();
+        match self.next_char() {
+            ';' => Value::Number(f),
+            _ => Value::Length(f, self.parse_unit()),
+        }
     }
 
     fn parse_float(&mut self) -> f32 {
@@ -148,6 +152,7 @@ impl Parser {
         let unit = self.parse_identifier();
         match unit.as_str() {
             "px" => Unit::Px,
+            "em" => Unit::Em,
             _ => panic!(""),
         }
     }

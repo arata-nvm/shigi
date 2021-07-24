@@ -38,6 +38,7 @@ pub enum Value {
 #[derive(Debug, Clone, PartialEq)]
 pub enum Unit {
     Px,
+    Em,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -74,6 +75,7 @@ impl Value {
     pub fn to_px(&self) -> f32 {
         match *self {
             Value::Length(f, Unit::Px) => f,
+            Value::Length(f, Unit::Em) => f * 16.0,
             _ => 0.0,
         }
     }
