@@ -1,4 +1,4 @@
-use crate::css::{self, default::DEFAULT_STYLE};
+use crate::css;
 
 #[derive(Debug, PartialEq, Default)]
 pub struct Stylesheet {
@@ -51,6 +51,8 @@ pub struct Color {
 }
 
 pub type Specificity = (usize, usize, usize);
+
+pub const DEFAULT_STYLE: &str = include_str!("default.css");
 
 impl Stylesheet {
     pub fn default_style() -> Self {

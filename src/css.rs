@@ -1,8 +1,6 @@
 pub mod stylesheet;
 pub use stylesheet::*;
 
-pub mod default;
-
 pub fn parse(source: String) -> Stylesheet {
     let rules = Parser {
         pos: 0,
