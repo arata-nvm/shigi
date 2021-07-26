@@ -139,7 +139,7 @@ impl Parser {
 
     fn parse_value(&mut self) -> Value {
         match self.next_char() {
-            '0'..='9' | '-' => self.parse_length_value(),
+            '0'..='9' | '-' | '.' => self.parse_length_value(),
             '#' => self.parse_color_value(),
             _ => Value::Keyword(self.parse_identifier()),
         }
