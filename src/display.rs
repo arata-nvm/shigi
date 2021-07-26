@@ -1,6 +1,6 @@
 pub mod pdf;
 
-use crate::css::{Color, Value};
+use crate::css::{Color, Unit::*, Value};
 use crate::html::NodeType;
 use crate::layout::{BoxType, LayoutBox, Position, Rect};
 
@@ -9,7 +9,7 @@ pub type DisplayList = Vec<DisplayCommand>;
 #[derive(Debug)]
 pub enum DisplayCommand {
     SolidColor(Color, Rect),
-    Text(String, Position),
+    Text(String, Position, f32),
 }
 
 pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
@@ -121,9 +121,13 @@ fn render_text(list: &mut DisplayList, layout_box: &LayoutBox) {
         BoxType::InlineNode(ref style) => match style.node.typ {
             NodeType::Text(ref text) => {
                 let pos = layout_box.dimensions.content;
+                let size = style
+                    .value_or("font-size", &Value::Length(16.0, Px))
+                    .to_px();
                 list.push(DisplayCommand::Text(
                     text.clone(),
                     Position::new(pos.x, pos.y),
+                    size,
                 ));
             }
             _ => {}

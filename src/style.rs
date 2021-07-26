@@ -62,18 +62,56 @@ impl<'a> StyledNode<'a> {
 }
 
 pub fn style_tree<'a>(root: &'a Node, stylesheet: &'a Stylesheet) -> StyledNode<'a> {
+    let specified_values = match root.typ {
+        NodeType::Element(ref elem) => specified_values(elem, stylesheet),
+        NodeType::Text(_) => HashMap::new(),
+    };
     StyledNode {
         node: root,
-        specified_values: match root.typ {
-            NodeType::Element(ref elem) => specified_values(elem, stylesheet),
-            NodeType::Text(_) => HashMap::new(),
-        },
         children: root
             .children
             .iter()
-            .map(|child| style_tree(child, stylesheet))
+            .map(|child| child_style_tree(child, stylesheet, &specified_values))
             .collect(),
+        specified_values,
     }
+}
+
+fn child_style_tree<'a>(
+    root: &'a Node,
+    stylesheet: &'a Stylesheet,
+    parent_values: &PropertyMap,
+) -> StyledNode<'a> {
+    let mut values = inherited_values(parent_values);
+    let specified_values = match root.typ {
+        NodeType::Element(ref elem) => specified_values(elem, stylesheet),
+        NodeType::Text(_) => HashMap::new(),
+    };
+    values.extend(specified_values);
+
+    StyledNode {
+        node: root,
+        children: root
+            .children
+            .iter()
+            .map(|child| child_style_tree(child, stylesheet, &values))
+            .collect(),
+        specified_values: values,
+    }
+}
+
+fn inherited_values(parent_values: &PropertyMap) -> PropertyMap {
+    let mut values = HashMap::new();
+
+    let inherited_decl_names = ["font-size"];
+
+    for decl_name in inherited_decl_names {
+        if let Some(value) = parent_values.get(decl_name) {
+            values.insert(decl_name.to_string(), value.clone());
+        }
+    }
+
+    values
 }
 
 fn specified_values(elem: &ElementData, stylesheet: &Stylesheet) -> PropertyMap {

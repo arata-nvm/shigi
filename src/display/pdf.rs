@@ -43,9 +43,11 @@ impl PdfRenderer {
                 );
                 self.ctx.fill();
             }
-            DisplayCommand::Text(ref text, ref pos) => {
+            DisplayCommand::Text(ref text, ref pos, ref size) => {
+                self.ctx.set_font_size(*size as f64);
                 let extents = self.ctx.text_extents(text);
                 let y = pos.y as f64 - extents.y_bearing;
+
                 self.ctx.move_to(pos.x as f64, y);
                 self.ctx.show_text(text);
             }

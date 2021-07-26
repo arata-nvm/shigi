@@ -1,4 +1,4 @@
-use crate::{html::NodeType, text::calc_text_region};
+use crate::{css::Value, html::NodeType, text::calc_text_region};
 
 use super::{BoxType, Dimensions, LayoutBox, Length, Px};
 
@@ -17,7 +17,8 @@ impl<'a> LayoutBox<'a> {
         match self.box_type {
             BoxType::InlineNode(ref style) => match style.node.typ {
                 NodeType::Text(ref text) => {
-                    let region = calc_text_region(text.clone());
+                    let font_size = style.value_or("font-size", &Value::Length(16.0, Px));
+                    let region = calc_text_region(text.clone(), font_size.to_px());
                     self.dimensions.content.width = region.width;
                     self.dimensions.content.height = region.height;
                 }
