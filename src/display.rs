@@ -19,6 +19,8 @@ pub fn build_display_list(layout_root: &LayoutBox) -> DisplayList {
 }
 
 fn render_layout_box(list: &mut DisplayList, layout_box: &LayoutBox) {
+    // debug_draw(list, layout_box);
+
     render_background(list, layout_box);
     render_borders(list, layout_box);
     render_text(list, layout_box);
